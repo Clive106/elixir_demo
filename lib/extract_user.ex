@@ -1,17 +1,22 @@
 defmodule ElixirDemo.ExtractUser do
   def extract_user(user)do
-    case extract_login(user)do
-      {:error, reason} -> {:error, reason}
-      {:ok, login} ->
-        case extract_email(user)do
-          {:error, reason} -> {:error, reason}
-          {:ok, email} ->
-            case extract_password(user)do
-              {:error, reason} -> {:error, reason}
-              {:ok, password} -> {:ok, %{"login" => login, "email" => email, "password" => password}}
-            end
+    # case extract_login(user)do
+    #   {:error, reason} -> {:error, reason}
+    #   {:ok, login} ->
+    #     case extract_email(user)do
+    #       {:error, reason} -> {:error, reason}
+    #       {:ok, email} ->
+    #         case extract_password(user)do
+    #           {:error, reason} -> {:error, reason}
+    #           {:ok, password} -> {:ok, %{"login" => login, "email" => email, "password" => password}}
+    #         end
+    #       end
+    #     end
+    with {:ok, login}<- extract_login(user),
+          {:ok, email}<- extract_email(user),
+          {:ok, password}<- extract_password(user) do
+            {:ok, %{"login" => login, "email" => email, "password" => password}}
           end
-        end
   end
 
   defp extract_login(%{"login" => login}), do: {:ok, login}
