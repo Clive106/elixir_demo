@@ -1,3 +1,57 @@
+defmodule TodoServer do
+  def start do
+    spawn(fn -> loop(TodoList.new()) end)
+  end
+
+  def add_entry(server_pid, new_entry) do
+    send(server_pid, {:add_entry, new_entry})
+  end
+
+  def entries(server_pid, date) do
+    send(server_pid, {:entries, self(), date})
+
+    receive do
+      {:todo_entries, entries} -> entries
+    after
+      5000 -> {:error, :timeout}
+    end
+  end
+
+  def update_entry(server_pid, entry_id, updater_fun) do
+    send(server_pid, {:update_entry, entry_id, updater_fun})
+  end
+
+  def delete_entry(server_pid, entry_id) do
+    send(server_pid, {:delete_entry, entry_id})
+  end
+
+  defp loop(todo_list) do
+    new_todo_list =
+      receive do
+        message -> process_message(todo_list, message)
+      end
+
+    loop(new_todo_list)
+  end
+
+  def process_message(todo_list, {:entries, caller, date}) do
+    send(caller, {:todo_entries, TodoList.entries(todo_list, date)})
+    todo_list
+  end
+
+  def process_message(todo_list, {:add_entry, entry}) do
+    TodoList.add_entry(todo_list, entry)
+  end
+
+  def process_message(todo_list, {:update_entry, entry_id, updater_fun}) do
+    TodoList.update_entry(todo_list, entry_id, updater_fun)
+  end
+
+  def process_message(todo_list, {:delete_entry, entry_id}) do
+    TodoList.delete_entry(todo_list, entry_id)
+  end
+end
+
 defmodule TodoList do
   alias MultiDict
 
@@ -10,10 +64,6 @@ defmodule TodoList do
       fn entry, todo_list_acc -> add_entry(todo_list_acc, entry) end
     )
   end
-
-  # def add_entry(todo_list, entry)do
-  #   MultiDict.add(todo_list, entry.date, entry)
-  # end
 
   def add_entry(todo_list, entry) do
     # set new entry id
