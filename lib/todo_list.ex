@@ -1,14 +1,15 @@
 defmodule TodoServer do
   def start do
-    spawn(fn -> loop(TodoList.new()) end)
+    pid = spawn(fn -> loop(TodoList.new()) end)
+    Process.register(pid, :todo_server)
   end
 
-  def add_entry(server_pid, new_entry) do
-    send(server_pid, {:add_entry, new_entry})
+  def add_entry(new_entry) do
+    send(:todo_server, {:add_entry, new_entry})
   end
 
-  def entries(server_pid, date) do
-    send(server_pid, {:entries, self(), date})
+  def entries(date) do
+    send(:todo_server, {:entries, self(), date})
 
     receive do
       {:todo_entries, entries} -> entries
@@ -17,12 +18,12 @@ defmodule TodoServer do
     end
   end
 
-  def update_entry(server_pid, entry_id, updater_fun) do
-    send(server_pid, {:update_entry, entry_id, updater_fun})
+  def update_entry(entry_id, updater_fun) do
+    send(:todo_server, {:update_entry, entry_id, updater_fun})
   end
 
-  def delete_entry(server_pid, entry_id) do
-    send(server_pid, {:delete_entry, entry_id})
+  def delete_entry(entry_id) do
+    send(:todo_server, {:delete_entry, entry_id})
   end
 
   defp loop(todo_list) do
@@ -34,20 +35,20 @@ defmodule TodoServer do
     loop(new_todo_list)
   end
 
-  def process_message(todo_list, {:entries, caller, date}) do
+  defp process_message(todo_list, {:entries, caller, date}) do
     send(caller, {:todo_entries, TodoList.entries(todo_list, date)})
     todo_list
   end
 
-  def process_message(todo_list, {:add_entry, entry}) do
+  defp process_message(todo_list, {:add_entry, entry}) do
     TodoList.add_entry(todo_list, entry)
   end
 
-  def process_message(todo_list, {:update_entry, entry_id, updater_fun}) do
+  defp process_message(todo_list, {:update_entry, entry_id, updater_fun}) do
     TodoList.update_entry(todo_list, entry_id, updater_fun)
   end
 
-  def process_message(todo_list, {:delete_entry, entry_id}) do
+  defp process_message(todo_list, {:delete_entry, entry_id}) do
     TodoList.delete_entry(todo_list, entry_id)
   end
 end
