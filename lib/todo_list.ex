@@ -2,6 +2,7 @@ defmodule TodoServer do
   def start do
     pid = spawn(fn -> loop(TodoList.new()) end)
     Process.register(pid, :todo_server)
+    :ok
   end
 
   def add_entry(new_entry) do
