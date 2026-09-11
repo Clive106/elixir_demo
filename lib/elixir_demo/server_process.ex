@@ -35,16 +35,24 @@ defmodule ServerProcess do
 end
 
 defmodule KeyValueStore do
-  def init() do
-    %{}
+  use GenServer
+
+  def init(_) do
+    # :timer.send_interval(5000, :cleanup)
+    {:ok, %{}}
   end
 
-  def handle_call({:get, key}, state) do
-    {Map.get(state, key), state}
+  # def handle_info(:cleanup, state)do
+  #   IO.puts("Performing cleanup...")
+  #   {:noreply, state}
+  # end
+
+  def handle_call({:get, key}, _,state) do
+    {:reply, Map.get(state, key), state}
   end
 
   def handle_cast({:put, key, value}, state) do
-    Map.put(state, key, value)
+    {:noreply, Map.put(state, key, value)}
   end
 
   # def handle_call({:delete, key}, state) do
@@ -52,22 +60,22 @@ defmodule KeyValueStore do
   # end
 
   def handle_cast({:delete, key}, state) do
-    Map.delete(state, key)
+    {:noreply, Map.delete(state, key)}
   end
 
   def start() do
-    ServerProcess.start(KeyValueStore)
+    GenServer.start(__MODULE__, nil, name: __MODULE__)
   end
 
-  def put(pid, key, value) do
-    ServerProcess.cast(pid, {:put, key, value})
+  def put(key, value) do
+    GenServer.cast(__MODULE__, {:put, key, value})
   end
 
-  def get(pid, key) do
-    ServerProcess.call(pid, {:get, key})
+  def get(key) do
+    GenServer.call(__MODULE__, {:get, key})
   end
 
-  def delete(pid, key) do
-    ServerProcess.cast(pid, {:delete, key})
+  def delete(key) do
+    GenServer.cast(__MODULE__, {:delete, key})
   end
 end
