@@ -1,4 +1,5 @@
 defmodule TodoGenServer do
+  use GenServer
   def start() do
     GenServer.start(__MODULE__, nil, name: __MODULE__)
   end
