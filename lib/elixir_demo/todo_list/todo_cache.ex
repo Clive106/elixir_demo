@@ -3,7 +3,7 @@ defmodule TodoCache do
 
   def init(_) do
     IO.puts("starting TodoCache...")
-    TodoDatabase.start()
+    TodoDatabase.start_link()
     {:ok, %{}}
   end
 
@@ -13,7 +13,7 @@ defmodule TodoCache do
         {:reply, todo_server, todo_servers}
 
       :error ->
-        {:ok, new_server} = TodoGenServer.start(todo_list_name)
+        {:ok, new_server} = TodoGenServer.start_link(todo_list_name)
 
         {
           :reply,
