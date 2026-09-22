@@ -6,6 +6,7 @@ defmodule TodoGenServer do
   end
 
   def init(name) do
+    IO.puts("starting todo server....")
     {:ok, {name, nil}, {:continue, :init}}
   end
 

@@ -11,6 +11,7 @@ defmodule TodoDatabase do
   confirms the data folder exists
   """
   def init(_) do
+    IO.puts("starting todo database....")
     File.mkdir_p!(@db_folder)
     {:ok, nil}
   end
