@@ -1,7 +1,7 @@
 defmodule TodoDatabase do
   use GenServer
 
-  def start_link() do
+  def start_link(_) do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
@@ -9,7 +9,7 @@ defmodule TodoDatabase do
   creates three workers
   """
   def init(_) do
-    IO.puts("starting todo database....")
+    IO.puts("starting todo database server....")
     {:ok, worker0} = TodoDatabaseWorker.start("./persist0")
     {:ok, worker1} = TodoDatabaseWorker.start("./persist1")
     {:ok, worker2} = TodoDatabaseWorker.start("./persist2")

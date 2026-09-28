@@ -3,7 +3,6 @@ defmodule TodoCache do
 
   def init(_) do
     IO.puts("starting TodoCache...")
-    TodoDatabase.start_link()
     {:ok, %{}}
   end
 

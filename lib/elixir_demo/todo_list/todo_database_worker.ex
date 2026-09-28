@@ -6,6 +6,7 @@ defmodule TodoDatabaseWorker do
   end
 
   def init(db_folder) do
+    IO.puts("starting TodoDatabase Workers...")
     File.mkdir_p!(db_folder)
 
     {:ok, db_folder}
