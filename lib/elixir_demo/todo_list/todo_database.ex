@@ -10,14 +10,14 @@ defmodule TodoDatabase do
   """
   def init(_) do
     IO.puts("starting todo database server....")
-    {:ok, worker0} = TodoDatabaseWorker.start("./persist0")
-    {:ok, worker1} = TodoDatabaseWorker.start("./persist1")
-    {:ok, worker2} = TodoDatabaseWorker.start("./persist2")
+    {:ok, _worker0} = TodoDatabaseWorker.start_link({"./persist0", 0})
+    {:ok, _worker1} = TodoDatabaseWorker.start_link({"./persist1", 1})
+    {:ok, _worker2} = TodoDatabaseWorker.start_link({"./persist2", 2})
 
     workers = %{
-      0 => worker0,
-      1 => worker1,
-      2 => worker2
+      0 => 0,
+      1 => 1,
+      2 => 2
     }
 
     {:ok, workers}
