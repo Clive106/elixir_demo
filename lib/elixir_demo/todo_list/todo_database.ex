@@ -1,55 +1,46 @@
 defmodule TodoDatabase do
-  use GenServer
+  @moduledoc """
+  This module is a supervisor that manages a pool of TodoDatabaseWorker processes.
+  """
+  @pool_size 3
+  @db_folder "./persist"
 
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
+  def start_link() do
+    File.mkdir(@db_folder)
+
+    children = Enum.map(1..@pool_size, &worker_spec/1)
+    Supervisor.start_link(children, strategy: :one_for_one)
+  end
+
+  def worker_spec(worker_id) do
+    default_worker_spec = {TodoDatabaseWorker, {@db_folder, worker_id}}
+    Supervisor.child_spec(default_worker_spec, id: worker_id)
   end
 
   @doc """
-  creates three workers
+  specifies tododatabase as a supervisor and can be started by invoked TodoDatabase.start_link()
   """
-  def init(_) do
-    IO.puts("starting todo database server....")
-    {:ok, _worker0} = TodoDatabaseWorker.start_link({"./persist0", 0})
-    {:ok, _worker1} = TodoDatabaseWorker.start_link({"./persist1", 1})
-    {:ok, _worker2} = TodoDatabaseWorker.start_link({"./persist2", 2})
-
-    workers = %{
-      0 => 0,
-      1 => 1,
-      2 => 2
+  def child_spec(_) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, []},
+      type: :supervisor
     }
-
-    {:ok, workers}
-  end
-
-  def handle_call({:get, key}, _caller, workers) do
-    worker = choose_worker(workers, key)
-
-    data = TodoDatabaseWorker.get(worker, key)
-
-    {:reply, data, workers}
-  end
-
-  def handle_cast({:store, key, data}, workers) do
-    worker = choose_worker(workers, key)
-
-    TodoDatabaseWorker.store(worker, key, data)
-
-    {:noreply, workers}
   end
 
   def get(key) do
-    GenServer.call(__MODULE__, {:get, key})
+    key
+    |> choose_worker()
+    |> TodoDatabaseWorker.get(key)
   end
 
   def store(key, data) do
-    GenServer.cast(__MODULE__, {:store, key, data})
+    key
+    |> choose_worker()
+    |> TodoDatabaseWorker.store(key, data)
   end
 
-  defp choose_worker(workers, key) do
-    worker_index = :erlang.phash2(key, 3)
-
-    workers[worker_index]
+  defp choose_worker(key) do
+    :erlang.phash2(key, @pool_size) + 1
   end
 end
