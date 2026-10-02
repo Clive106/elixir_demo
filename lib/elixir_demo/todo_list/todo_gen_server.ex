@@ -2,7 +2,11 @@ defmodule TodoGenServer do
   use GenServer
 
   def start_link(list_name) do
-    GenServer.start_link(__MODULE__, list_name)
+    GenServer.start_link(__MODULE__, list_name, name: via_tuple(list_name))
+  end
+
+    defp via_tuple(name)do
+    TodoProcessRegistry.via_tuple({__MODULE__, name})
   end
 
   def init(name) do
@@ -67,6 +71,7 @@ defmodule TodoGenServer do
     {:noreply, {name, new_list}}
   end
 
+#interface functions
   def add_entry(server_pid, new_entry) do
     GenServer.cast(server_pid, {:add_entry, new_entry})
   end
