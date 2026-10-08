@@ -1,5 +1,4 @@
 defmodule TodoCache do
-  # use DynamicSupervisor
 
   @doc """
   starts
