@@ -73,6 +73,11 @@ defmodule TodoGenServer do
     {:noreply, {name, new_list}}
   end
 
+  def handle_info(:timeout, {name, todo_list}) do
+    IO.puts("Stopping todo server for #{name} due to inactivity...")
+    {:stop, :normal, {name, todo_list}}
+  end
+
   # interface functions
   def add_entry(server_pid, new_entry) do
     GenServer.cast(server_pid, {:add_entry, new_entry})
