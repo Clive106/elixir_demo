@@ -24,3 +24,6 @@ elixir_demo-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+#ignores the perist folder that is used to store the todo list data
+/persist/
