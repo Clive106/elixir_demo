@@ -42,7 +42,7 @@ defmodule TodoWeb do
   def child_spec(_) do
     Plug.Cowboy.child_spec(
       scheme: :http,
-      options: [port: 4100],
+      options: [port: Application.fetch_env!(:elixir_demo, :http_port)],
       plug: __MODULE__
     )
   end
