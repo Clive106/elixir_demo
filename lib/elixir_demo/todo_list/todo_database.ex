@@ -2,22 +2,25 @@ defmodule TodoDatabase do
   @moduledoc """
   This module is a supervisor that manages a pool of TodoDatabaseWorker processes.
   """
-  @pool_size 3
-  @db_folder "./persist"
 
-def child_spec(_)do
-  File.mkdir_p!(@db_folder)
+  # @pool_size 3
+  # @db_folder "./persist"
 
-  :poolboy.child_spec(
-    __MODULE__,
-    [
-      name: {:local, __MODULE__},
-      worker_module: TodoDatabaseWorker,
-      size: @pool_size,
-    ],
-    [@db_folder]
-  )
-end
+  def child_spec(_) do
+    pool_size = Application.fetch_env!(:elixir_demo, :pool_size)
+    db_folder = Application.fetch_env!(:elixir_demo, :db_folder)
+    File.mkdir_p!(db_folder)
+
+    :poolboy.child_spec(
+      __MODULE__,
+      [
+        name: {:local, __MODULE__},
+        worker_module: TodoDatabaseWorker,
+        size: pool_size
+      ],
+      [db_folder]
+    )
+  end
 
   # def start_link() do
   #   File.mkdir(@db_folder)
@@ -27,13 +30,15 @@ end
   # end
 
   def worker_spec(worker_id) do
-    default_worker_spec = {TodoDatabaseWorker, {@db_folder, worker_id}}
+    db_folder = Application.fetch_env!(:elixir_demo, :db_folder)
+    default_worker_spec = {TodoDatabaseWorker, {db_folder, worker_id}}
     Supervisor.child_spec(default_worker_spec, id: worker_id)
   end
 
   @doc """
   specifies tododatabase as a supervisor and can be started by invoked TodoDatabase.start_link()
   """
+
   # def child_spec(_) do
   #   %{
   #     id: __MODULE__,
